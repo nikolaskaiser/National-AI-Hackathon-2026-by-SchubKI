@@ -1,0 +1,1 @@
+# National-AI-Hackathon-2026-by-SchubKI
