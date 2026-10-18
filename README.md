@@ -108,11 +108,32 @@ within 0.50 m          90.5 %
 within 1.00 m          99.9 %
 ```
 
+## Our solution — `camloc/`
+
+A causal, camera-only localization pipeline lives in [`camloc/`](camloc/). It runs
+visual odometry on a front camera for frame-to-frame `base_link` motion and fuses
+it with the surveyed track borders through a particle filter, so long-term drift
+(especially the lateral error the metric weights most) is pulled back onto the map.
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+python -m camloc.run c0_2026-10-13_22-53-42_camloc_0.mcap submission.csv
+python tools/extract_gt.py c0_2026-10-13_22-53-42_camloc_0.mcap gt.csv
+python tools/evaluate.py gt.csv submission.csv
+```
+
+See [`camloc/README.md`](camloc/README.md) for the architecture, flags and tuning
+notes. The geometry/track math has numpy-free unit tests in [`tests/`](tests/)
+(`python tests/test_geometry.py`).
+
 ## Files
 
 | file | |
 |---|---|
 | `c0_2026-10-13_22-53-42_camloc_0.mcap`, `metadata.yaml` | the dataset (ROS 2 bag) |
+| `camloc/` | our camera-only localization pipeline |
 | `tools/extract_gt.py` | ground truth to CSV |
 | `tools/evaluate.py` | scoring |
 | `track_bounds_check.png` | track borders with the GT trajectory |
