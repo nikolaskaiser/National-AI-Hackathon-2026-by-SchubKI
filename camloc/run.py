@@ -18,7 +18,7 @@ from .vo import VOConfig
 def build_config(args) -> PipelineConfig:
     return PipelineConfig(
         reference_camera=args.camera,
-        vo=VOConfig(max_features=args.features),
+        vo=VOConfig(max_features=args.features, robust_scale=args.robust_scale),
         filt=FilterConfig(
             n_particles=args.particles,
             expected_half_width=args.half_width,
@@ -34,6 +34,8 @@ def main(argv=None) -> int:
     p.add_argument("--camera", default="fl", help="reference camera for VO (default fl)")
     p.add_argument("--particles", type=int, default=600)
     p.add_argument("--features", type=int, default=1200)
+    p.add_argument("--robust-scale", action="store_true",
+                   help="use RANSAC ground-plane scale recovery (scale.py)")
     p.add_argument("--half-width", type=float, default=6.0,
                    help="expected car-centre to nearest border distance [m]")
     p.add_argument("--half-width-sigma", type=float, default=2.5)

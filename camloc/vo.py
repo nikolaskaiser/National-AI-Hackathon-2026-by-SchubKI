@@ -43,6 +43,9 @@ class VOConfig:
     min_tracks: int = 30                # below this -> fall back to prediction
     max_speed: float = 45.0             # m/s, clamp implausible scale spikes
     scale_smoothing: float = 0.5        # EMA on recovered speed (0..1)
+    robust_scale: bool = False          # use RANSAC ground-plane scale (scale.py)
+    robust_scale_iters: int = 80        # RANSAC iterations when robust_scale
+    robust_scale_thresh: float = 0.05   # RANSAC inlier band (unit baseline)
 
 
 class VisualOdometry:
@@ -82,7 +85,18 @@ class VisualOdometry:
         that fall on the ground plane (points below the camera, consistent
         depth), and scale so their median height below the camera matches the
         real mounting height. Returns a positive scale, or None if degenerate.
+
+        If cfg.robust_scale is set, delegate to the RANSAC ground-plane
+        estimator in scale.py (more accurate at speed / with outliers).
         """
+        if self.cfg.robust_scale:
+            from .scale import ground_plane_scale
+
+            return ground_plane_scale(
+                self.K, R, t_dir, p0, p1, self.cam_height, cv2,
+                n_iter=self.cfg.robust_scale_iters,
+                thresh=self.cfg.robust_scale_thresh,
+            )
         P0 = self.K @ np.hstack([np.eye(3), np.zeros((3, 1))])
         P1 = self.K @ np.hstack([R, t_dir.reshape(3, 1)])
         pts4 = cv2.triangulatePoints(P0, P1, p0.T, p1.T)
