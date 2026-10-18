@@ -1,0 +1,8 @@
+# Runtime dependencies for the camloc pipeline and the provided tools.
+# Install into a virtualenv with network access (the grading sandbox has none):
+#     python -m venv .venv && source .venv/bin/activate
+#     pip install -r requirements.txt
+numpy>=1.24
+opencv-python>=4.8
+mcap>=1.1
+mcap-ros2-support>=0.5
